@@ -95,40 +95,20 @@ class DioClient {
       ),
     );
 
-    // Global interceptor to map backend errors
+    // Global interceptor to convert error status codes to responses
+    // Since the API returns ApiResponse structure for all responses
     dio.interceptors.add(
       InterceptorsWrapper(
-        onResponse: (response, handler) {
-          final data = response.data;
-          if (data is Map && data['success'] == false) {
-            throw ApiException(
-              message: data['message'] ?? 'Unknown error',
-              status: data['status'] ?? response.statusCode ?? 500,
-              error: data['error'],
-              details: data['details'],
-            );
-          }
-          handler.next(response);
-        },
         onError: (error, handler) {
           final res = error.response;
-          if (res?.data is Map) {
-            final data = res!.data;
-            handler.reject(
-              DioException(
-                requestOptions: error.requestOptions,
-                response: res,
-                error: ApiException(
-                  message: data['message'] ?? 'Request failed',
-                  status: data['status'] ?? res.statusCode ?? 500,
-                  error: data['error'],
-                  details: data['details'],
-                ),
-                type: error.type,
-              ),
-            );
+          // If we have a response body with the ApiResponse structure,
+          // treat it as a successful response (not an exception)
+          if (res?.data is Map && res!.data['success'] != null) {
+            // Convert the error to a response so it can be parsed as ApiResponse
+            handler.resolve(res);
             return;
           }
+          // For other errors (network issues, etc.), keep as error
           handler.next(error);
         },
       ),

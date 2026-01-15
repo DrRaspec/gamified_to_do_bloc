@@ -24,8 +24,12 @@ class AuthRepository {
         (json) => AuthData.fromMap(json as Map<String, dynamic>),
       );
     } on DioException catch (e) {
-      if (e.error is ApiException) throw e.error!;
-      rethrow;
+      // For network errors or other exceptions without ApiResponse structure
+      throw ApiException(
+        message: e.message ?? 'Network error',
+        status: e.response?.statusCode ?? 500,
+        error: 'Connection failed',
+      );
     }
   }
 
@@ -41,18 +45,28 @@ class AuthRepository {
         (json) => AuthData.fromMap(json as Map<String, dynamic>),
       );
     } on DioException catch (e) {
-      if (e.error is ApiException) throw e.error!;
-      rethrow;
+      // For network errors or other exceptions without ApiResponse structure
+      throw ApiException(
+        message: e.message ?? 'Network error',
+        status: e.response?.statusCode ?? 500,
+        error: 'Connection failed',
+      );
     }
   }
 
-  Future<ApiResponse<dynamic>> me() async {
+  Future<ApiResponse<AuthData>> me() async {
     try {
       final response = await _dioClient.dio.get(ApiEndpoints.me);
-      return ApiResponse.fromJson(response.data, null);
+      return ApiResponse.fromJson(
+        response.data,
+        (json) => AuthData.fromMap(json as Map<String, dynamic>),
+      );
     } on DioException catch (e) {
-      if (e.error is ApiException) throw e.error!;
-      rethrow;
+      throw ApiException(
+        message: e.message ?? 'Network error',
+        status: e.response?.statusCode ?? 500,
+        error: 'Connection failed',
+      );
     }
   }
 

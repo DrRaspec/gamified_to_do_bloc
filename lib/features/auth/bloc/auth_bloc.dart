@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../../core/errors/api_exception.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../models/auth_data.dart';
 import '../../../models/register_request.dart';
@@ -23,10 +24,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {
     final token = await tokenStorage.readAccessToken();
-    if (token != null) {
-      // TODO: Fetch user data and create AuthData object
-      // For now, we'll just emit Unauthenticated to force login
-      emit(Unauthenticated());
+    if (token != null && token.isNotEmpty) {
+      try {
+        // Fetch current user data to restore authentication state
+        final response = await authRepository.me();
+
+        if (response.success && response.data != null) {
+          emit(Authenticated(response.data!));
+        } else {
+          // Token exists but is invalid, clear and logout
+          await tokenStorage.clear();
+          emit(Unauthenticated());
+        }
+      } catch (e) {
+        // Failed to fetch user data, token might be expired
+        await tokenStorage.clear();
+        emit(Unauthenticated());
+      }
     } else {
       emit(Unauthenticated());
     }
@@ -47,10 +61,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
         emit(Authenticated(response.data!));
       } else {
+        // API returned error in ApiResponse structure
         emit(AuthError(response.message));
       }
+    } on ApiException catch (e) {
+      // Network or connection errors
+      emit(AuthError(e.message));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError('An unexpected error occurred'));
     }
   }
 
@@ -76,10 +94,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
         emit(Authenticated(response.data!));
       } else {
+        // API returned error in ApiResponse structure
         emit(AuthError(response.message));
       }
+    } on ApiException catch (e) {
+      // Network or connection errors
+      emit(AuthError(e.message));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError('An unexpected error occurred'));
     }
   }
 
