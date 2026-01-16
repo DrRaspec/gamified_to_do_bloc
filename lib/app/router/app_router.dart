@@ -1,22 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/bloc/auth_bloc.dart';
 import '../../features/auth/view/login_page.dart';
 import '../../features/auth/view/register_page.dart';
+import '../../features/calendar/view/calendar_page.dart';
+import '../../features/home/view/home_page.dart';
 import '../../features/main/view/main_shell.dart';
-import '../di/service_locator.dart';
+import '../../features/profile/view/profile_page.dart';
+import '../../features/tasks/view/tasks_page.dart';
 
 class AppRouter {
-  static GoRouter get router => GoRouter(
+  static GoRouter router(AuthBloc authBloc) => GoRouter(
     initialLocation: '/splash',
     debugLogDiagnostics: true,
     redirect: (context, state) async {
-      // Get auth state
-      final authBloc = context.read<AuthBloc>();
       final authState = authBloc.state;
 
       final isGoingToLogin = state.matchedLocation == '/login';
@@ -24,8 +24,8 @@ class AppRouter {
       final isGoingToSplash = state.matchedLocation == '/splash';
       final isGoingToAuth = isGoingToLogin || isGoingToRegister;
 
-      // If authenticated, ensure we go to home (unless already there)
-      if (authState is Authenticated && isGoingToAuth) {
+      // If authenticated, ensure we go to home
+      if (authState is Authenticated && (isGoingToAuth || isGoingToSplash)) {
         return '/home';
       }
 
@@ -41,7 +41,7 @@ class AppRouter {
 
       return null; // No redirect needed
     },
-    refreshListenable: GoRouterRefreshStream(getIt<AuthBloc>().stream),
+    refreshListenable: GoRouterRefreshStream(authBloc.stream),
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
@@ -52,7 +52,7 @@ class AppRouter {
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
-          GoRoute(path: '/home', builder: (context, state) => const HomePage()),
+          GoRoute(path: '/home', builder: (context, state) => HomePage()),
           GoRoute(
             path: '/tasks',
             builder: (context, state) => const TasksPage(),
@@ -96,61 +96,5 @@ class SplashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Home Page', style: TextStyle(fontSize: 24)),
-    );
-  }
-}
-
-class TasksPage extends StatelessWidget {
-  const TasksPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Tasks Page', style: TextStyle(fontSize: 24)),
-    );
-  }
-}
-
-class CalendarPage extends StatelessWidget {
-  const CalendarPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Calendar Page', style: TextStyle(fontSize: 24)),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('Profile Page', style: TextStyle(fontSize: 24)),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              context.read<AuthBloc>().add(LoggedOut());
-            },
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
   }
 }

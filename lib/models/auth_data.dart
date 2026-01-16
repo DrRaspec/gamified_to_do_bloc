@@ -53,12 +53,13 @@ class AuthData {
 
   factory AuthData.fromMap(Map<String, dynamic> map) {
     return AuthData(
-      userId: map['userId'] as int,
-      firstName: map['firstName'] as String,
-      lastName: map['lastName'] as String,
-      accessToken: map['accessToken'] as String,
-      refreshToken: map['refreshToken'] as String,
-      email: map['email'] as String,
+      userId: (map['userId'] ?? map['id'] ?? 0) as int,
+      firstName: (map['firstName'] ?? map['first_name'] ?? '') as String,
+      lastName: (map['lastName'] ?? map['last_name'] ?? '') as String,
+      accessToken: (map['accessToken'] ?? map['access_token'] ?? '') as String,
+      refreshToken:
+          (map['refreshToken'] ?? map['refresh_token'] ?? '') as String,
+      email: (map['email'] ?? '') as String,
       expiryDate: map['expiryDate'] != null
           ? map['expiryDate'] as String
           : null,

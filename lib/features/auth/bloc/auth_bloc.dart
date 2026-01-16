@@ -62,11 +62,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(Authenticated(response.data!));
       } else {
         // API returned error in ApiResponse structure
-        emit(AuthError(response.message));
+        emit(AuthError(response.getDetailedMessage()));
       }
     } on ApiException catch (e) {
       // Network or connection errors
-      emit(AuthError(e.message));
+      emit(AuthError(e.getDetailedMessage()));
     } catch (e) {
       emit(AuthError('An unexpected error occurred'));
     }
@@ -95,11 +95,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(Authenticated(response.data!));
       } else {
         // API returned error in ApiResponse structure
-        emit(AuthError(response.message));
+        emit(AuthError(response.getDetailedMessage()));
       }
     } on ApiException catch (e) {
       // Network or connection errors
-      emit(AuthError(e.message));
+      emit(AuthError(e.getDetailedMessage()));
     } catch (e) {
       emit(AuthError('An unexpected error occurred'));
     }

@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:gamified_to_do_app_bloc/repository/dashboard_repository.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../core/network/dio_client.dart';
@@ -31,9 +32,11 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<AuthRepository>(() => AuthRepository(getIt()));
 
   // BLoCs
-  getIt.registerLazySingleton<AuthBloc>(
+  getIt.registerFactory<AuthBloc>(
     () => AuthBloc(tokenStorage: getIt(), authRepository: getIt()),
   );
 
-  // Add other dependencies here as needed
+  getIt.registerLazySingleton<DashboardRepository>(
+    () => DashboardRepository(getIt()),
+  );
 }

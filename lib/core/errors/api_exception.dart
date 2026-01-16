@@ -14,4 +14,16 @@ class ApiException implements Exception {
   @override
   String toString() =>
       'ApiException(status: $status, message: $message, error: $error)';
+
+  String getDetailedMessage() {
+    if (details != null && details!.isNotEmpty) {
+      final firstError = details!.values.first;
+      if (firstError is String) {
+        return firstError;
+      } else if (firstError is List && firstError.isNotEmpty) {
+        return firstError.first.toString();
+      }
+    }
+    return message;
+  }
 }

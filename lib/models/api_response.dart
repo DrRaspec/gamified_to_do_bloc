@@ -33,4 +33,16 @@ class ApiResponse<T> {
           : json['data'],
     );
   }
+
+  String getDetailedMessage() {
+    if (details != null && details!.isNotEmpty) {
+      final firstError = details!.values.first;
+      if (firstError is String) {
+        return firstError;
+      } else if (firstError is List && firstError.isNotEmpty) {
+        return firstError.first.toString();
+      }
+    }
+    return message;
+  }
 }

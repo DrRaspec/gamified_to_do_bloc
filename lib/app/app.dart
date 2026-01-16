@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:toastification/toastification.dart';
 
 import '../core/theme/app_theme.dart';
 import '../features/auth/bloc/auth_bloc.dart';
@@ -11,14 +12,16 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      // Use getIt to inject TokenStorage into AuthBloc
-      create: (_) => getIt<AuthBloc>()..add(AppStarted()),
-      child: MaterialApp.router(
-        title: 'Gamified To-Do App',
-        theme: AppTheme.darkTheme,
-        debugShowCheckedModeBanner: false,
-        routerConfig: AppRouter.router,
+    final authBloc = getIt<AuthBloc>()..add(AppStarted());
+    return BlocProvider.value(
+      value: authBloc,
+      child: ToastificationWrapper(
+        child: MaterialApp.router(
+          title: 'Gamified To-Do App',
+          theme: AppTheme.darkTheme,
+          debugShowCheckedModeBanner: false,
+          routerConfig: AppRouter.router(authBloc),
+        ),
       ),
     );
   }

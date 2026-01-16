@@ -7,4 +7,6 @@ class ApiEndpoints {
 
   static const String me = '/$apiVersion/user/me';
   static const String profile = '/$apiVersion/user/profile';
+
+  static const String dashboard = '/$apiVersion/dashboard';
 }

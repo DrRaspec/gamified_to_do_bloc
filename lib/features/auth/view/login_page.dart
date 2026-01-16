@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/app_notifications.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../bloc/auth_bloc.dart';
@@ -41,112 +42,128 @@ class _LoginPageState extends State<LoginPage> {
     final theme = Theme.of(context);
 
     return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (previous, current) {
+        return previous != current;
+      },
       listener: (context, state) {
+        if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
         if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+          AppNotifications.showError(
+            context,
+            message: state.message,
+            title: 'Login Failed',
           );
         } else if (state is Authenticated) {
+          AppNotifications.showSuccess(
+            context,
+            message: 'Welcome back, ${state.authData.firstName}!',
+            title: 'Login Successful',
+          );
           context.go('/home');
         }
       },
-      child: Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // App icon/logo
-                    Icon(
-                      Icons.task_alt_rounded,
-                      size: 80,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Gamified To-Do',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Scaffold(
+          body: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // App icon/logo
+                      Icon(
+                        Icons.task_alt_rounded,
+                        size: 80,
                         color: theme.colorScheme.primary,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Level up your productivity',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey,
+                      const SizedBox(height: 16),
+                      Text(
+                        'Gamified To-Do',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 48),
-
-                    // Email field
-                    CustomTextField(
-                      controller: _emailController,
-                      labelText: 'Email',
-                      prefixIcon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Password field
-                    CustomTextField(
-                      controller: _passwordController,
-                      labelText: 'Password',
-                      prefixIcon: Icons.lock_outline,
-                      obscureText: true,
-                      showPasswordToggle: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Login button
-                    BlocBuilder<AuthBloc, AuthState>(
-                      builder: (context, state) {
-                        final isLoading = state is AuthLoading;
-                        return PrimaryButton(
-                          text: 'Login',
-                          onPressed: _handleLogin,
-                          isLoading: isLoading,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Register link
-                    TextButton(
-                      onPressed: () {
-                        context.push('/register');
-                      },
-                      child: Text(
-                        'Don\'t have an account? Register',
-                        style: TextStyle(color: theme.colorScheme.primary),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Level up your productivity',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 48),
+
+                      // Email field
+                      CustomTextField(
+                        controller: _emailController,
+                        labelText: 'Email',
+                        prefixIcon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          if (!value.contains('@')) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Password field
+                      CustomTextField(
+                        controller: _passwordController,
+                        labelText: 'Password',
+                        prefixIcon: Icons.lock_outline,
+                        obscureText: true,
+                        showPasswordToggle: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          if (value.length < 6) {
+                            return 'Password must be at least 6 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Login button
+                      BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, state) {
+                          final isLoading = state is AuthLoading;
+                          return PrimaryButton(
+                            text: 'Login',
+                            onPressed: _handleLogin,
+                            isLoading: isLoading,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Register link
+                      TextButton(
+                        onPressed: () {
+                          context.push('/register');
+                        },
+                        child: Text(
+                          'Don\'t have an account? Register',
+                          style: TextStyle(color: theme.colorScheme.primary),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

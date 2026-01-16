@@ -24,6 +24,16 @@ class AuthRepository {
         (json) => AuthData.fromMap(json as Map<String, dynamic>),
       );
     } on DioException catch (e) {
+      // Extract error details from response if available
+      if (e.response?.data is Map<String, dynamic>) {
+        final errorData = e.response!.data as Map<String, dynamic>;
+        throw ApiException(
+          message: errorData['message'] ?? 'An error occurred',
+          status: e.response?.statusCode ?? 500,
+          error: errorData['error'],
+          details: errorData['details'],
+        );
+      }
       // For network errors or other exceptions without ApiResponse structure
       throw ApiException(
         message: e.message ?? 'Network error',
@@ -45,6 +55,16 @@ class AuthRepository {
         (json) => AuthData.fromMap(json as Map<String, dynamic>),
       );
     } on DioException catch (e) {
+      // Extract error details from response if available
+      if (e.response?.data is Map<String, dynamic>) {
+        final errorData = e.response!.data as Map<String, dynamic>;
+        throw ApiException(
+          message: errorData['message'] ?? 'An error occurred',
+          status: e.response?.statusCode ?? 500,
+          error: errorData['error'],
+          details: errorData['details'],
+        );
+      }
       // For network errors or other exceptions without ApiResponse structure
       throw ApiException(
         message: e.message ?? 'Network error',
@@ -62,6 +82,16 @@ class AuthRepository {
         (json) => AuthData.fromMap(json as Map<String, dynamic>),
       );
     } on DioException catch (e) {
+      // Extract error details from response if available
+      if (e.response?.data is Map<String, dynamic>) {
+        final errorData = e.response!.data as Map<String, dynamic>;
+        throw ApiException(
+          message: errorData['message'] ?? 'An error occurred',
+          status: e.response?.statusCode ?? 500,
+          error: errorData['error'],
+          details: errorData['details'],
+        );
+      }
       throw ApiException(
         message: e.message ?? 'Network error',
         status: e.response?.statusCode ?? 500,
